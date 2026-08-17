@@ -1,49 +1,46 @@
 import os
 
-# 基础路径
+# 项目根目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 数据存储目录
 DATA_DIR = os.path.join(BASE_DIR, "data")
 IMAGE_DIR = os.path.join(BASE_DIR, "images")
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
-
-# 临时文件目录：所有调试/中间产物统一放这里，可随时整目录清空
 TMP_DIR = os.path.join(BASE_DIR, "_tmp")
 
-os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(IMAGE_DIR, exist_ok=True)
-os.makedirs(CACHE_DIR, exist_ok=True)
-os.makedirs(TMP_DIR, exist_ok=True)
+# 确保目录存在
+for directory in [DATA_DIR, IMAGE_DIR, CACHE_DIR, TMP_DIR]:
+    os.makedirs(directory, exist_ok=True)
 
-# 网站配置
+# 目标网站基础配置
 BASE_URL = "https://www.gigab2b.com"
-CATEGORY_URL = f"{BASE_URL}/index.php?route=product/category"
-SEARCH_URL = f"{BASE_URL}/index.php?route=product/search"
-
-# 请求头配置
-DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    "Cache-Control": "max-age=0",
-    "Sec-Ch-Ua": '"Chromium";v="124", "Microsoft Edge";v="124", "Not-A.Brand";v="99"',
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Ch-Ua-Platform": '"Windows"',
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "same-origin",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1"
-}
-
-# 爬虫参数
-REQUEST_TIMEOUT = 20
-MAX_RETRIES = 3
-RETRY_DELAY = 2  # 重试间隔(秒)
-REQUEST_DELAY = 0.5  # 每次请求间隔(秒)
-MAX_WORKERS = 5  # 详情页爬取并发线程数
-
-# Cookie 存储路径
+SEARCH_URL = f"{BASE_URL}/index.php?route=product/list/search"
 COOKIE_FILE = os.path.join(BASE_DIR, "cookies.json")
 COOKIE_TXT_FILE = os.path.join(BASE_DIR, "cookie.txt")
-CRAWLED_ID_FILE = os.path.join(CACHE_DIR, "crawled_ids.txt")
-DATA_CACHE_FILE = os.path.join(CACHE_DIR, "scraped_products.jsonl")
+
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "X-Requested-With": "XMLHttpRequest"
+}
+
+# 网络请求与连接池高并发调优
+DEFAULT_WORKERS = 15          # 默认并发线程数（推荐 15~20）
+POOL_CONNECTIONS = 50         # HTTP 连接池连接数
+POOL_MAXSIZE = 50             # HTTP 连接池最大复用数
+REQUEST_TIMEOUT = 18          # 请求超时时间（秒）
+MAX_RETRIES = 4               # 失败最大重试次数
+RETRY_DELAY = 1.0             # 失败重试基础间隔（秒）
+REQUEST_DELAY_MIN = 0.05      # 请求最小随机延迟
+REQUEST_DELAY_MAX = 0.15      # 请求最大随机延迟
+
+# 数据库与批量写入性能调优
+DB_BATCH_SIZE = 30            # 内存缓冲批量写入阈值（每 30 条写入一次数据库）
+DB_FLUSH_INTERVAL = 3.0       # 缓冲刷新最大时间间隔（秒）
+DB_CACHE_SIZE_MB = 64         # SQLite WAL 内存缓存大小 (MB)
+
+# Excel 分卷阈值
+EXCEL_CHUNK_SIZE = 50000      # 每个 Excel 分卷最大商品数
+AUTO_SNAPSHOT_INTERVAL = 5000 # 每采集 5000 条自动记录检查点
