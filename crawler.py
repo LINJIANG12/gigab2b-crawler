@@ -24,10 +24,12 @@ from database import Database
 
 class GigaB2BCrawler:
     """
-    GigaB2B 全站商品工业级高并发采集调度引擎（实时流式监控版）：
-    - 阶段一：4,800 个微切片空间高并发探测，突破搜索截断限制，建立全量任务池
-    - 阶段二：多线程详情深度采集 + HTTP 连接池复用 + 毫秒级流式仪表盘 (ETA)
-    - 阶段三：分卷 Excel 与 UTF-8 BOM CSV 数据全量导出
+    GigaB2B 全站商品全量挖掘与采集调度引擎（复合矩阵超空间扫描版）：
+    - 矩阵 1：4,800 个微切片价格网格 ($0.01 ~ $6,000)
+    - 矩阵 2：217 个全站分类树全覆盖遍历
+    - 矩阵 3：全字母 SKU 前缀与品类热词深度探测
+    - 阶段二：多线程详情深度采集 + HTTP 连接池复用 + 实时仪表盘 (ETA) + 内存缓冲批量持久化
+    - 阶段三：分卷 Excel 与 UTF-8 BOM CSV 全量导出
     """
     def __init__(self, session: requests.Session = None, max_workers: int = DEFAULT_WORKERS):
         self.session = session or get_authenticated_session(load_cookies())
@@ -88,20 +90,31 @@ class GigaB2BCrawler:
                 time.sleep(RETRY_DELAY * attempt + random.uniform(0.05, 0.2))
         return {}
 
-    def scan_micro_slice(self, p_min: float, p_max: float) -> list[dict]:
-        """抓取单个微切片下的所有商品（翻 1~2 页彻底穷尽）"""
+    def fetch_category_tree(self) -> list[dict]:
+        """获取全站完整的分类树"""
+        url = SEARCH_URL
+        payload = {
+            "page": 1,
+            "limit": 1,
+            "search_dimension": 1,
+            "scene": 1
+        }
+        res = self.fetch_json_api(url, json_payload=payload, method="POST")
+        cat_tree = res.get('data', {}).get('category', [])
+        return self.parser.parse_category_tree(cat_tree)
+
+    def scan_search_space(self, payload_dict: dict) -> list[dict]:
+        """通用空间探测器：翻 1~3 页抓取商品"""
         url = SEARCH_URL
         discovered = []
-        for page in [1, 2]:
-            payload = {
-                "page": page,
-                "limit": 30,
-                "search_dimension": 1,
-                "scene": 1,
-                "price_min": round(p_min, 2),
-                "price_max": round(p_max, 2)
-            }
-            res = self.fetch_json_api(url, json_payload=payload, method="POST")
+        for page in [1, 2, 3]:
+            body = dict(payload_dict)
+            body["page"] = page
+            body["limit"] = 30
+            body["search_dimension"] = 1
+            if "scene" not in body:
+                body["scene"] = 1
+            res = self.fetch_json_api(url, json_payload=body, method="POST")
             p_list = res.get('data', {}).get('product_list', [])
             for pid in p_list:
                 discovered.append({
@@ -113,60 +126,60 @@ class GigaB2BCrawler:
         return discovered
 
     def populate_all_tasks_concurrent(self, limit: int = None):
-        """全并发扫描 4,800 个微切片空间，建立全站 9 万+ 商品完整索引池"""
+        """全并发三维复合矩阵空间扫描，彻底构建全站全量商品任务池"""
         print("\n" + "="*65, flush=True)
-        print(" [阶段一] 高密度微切片空间全并发探测 (挖掘全站 9 万+ 商品)", flush=True)
+        print(" [阶段一] 三维复合矩阵空间全并发探测 (挖掘全站 9 万+ 全部商品)", flush=True)
         print("="*65, flush=True)
 
-        slices = []
-        # $0 ~ $150: 每 $0.10 一个微切片 (1500 个)
+        tasks_queue = []
+
+        # 1. 价格微切片网格 (约 4,800 个)
         for i in range(0, 1500):
             p1 = i / 10.0
-            p2 = round(p1 + 0.09, 2)
-            slices.append((p1, p2))
-
-        # $150 ~ $400: 每 $0.25 一个微切片 (1000 个)
+            tasks_queue.append({"price_min": round(p1, 2), "price_max": round(p1 + 0.09, 2), "scene": 1})
         for i in range(1500, 4000, 25):
             p1 = i / 10.0
-            p2 = round(p1 + 0.24, 2)
-            slices.append((p1, p2))
-
-        # $400 ~ $1000: 每 $0.50 一个微切片 (1200 个)
+            tasks_queue.append({"price_min": round(p1, 2), "price_max": round(p1 + 0.24, 2), "scene": 1})
         for i in range(4000, 10000, 50):
             p1 = i / 10.0
-            p2 = round(p1 + 0.49, 2)
-            slices.append((p1, p2))
-
-        # $1000 ~ $2500: 每 $2.00 一个切片 (750 个)
+            tasks_queue.append({"price_min": round(p1, 2), "price_max": round(p1 + 0.49, 2), "scene": 1})
         for p in range(1000, 2500, 2):
-            slices.append((p + 0.01, p + 1.99))
-
-        # $2500 ~ $6000: 每 $10.00 一个切片 (350 个)
+            tasks_queue.append({"price_min": p + 0.01, "price_max": p + 1.99, "scene": 1})
         for p in range(2500, 6000, 10):
-            slices.append((p + 0.01, p + 9.99))
+            tasks_queue.append({"price_min": p + 0.01, "price_max": p + 9.99, "scene": 1})
 
-        print(f"[+] 成功构建全站微切片网格: 共 {len(slices):,} 个切片", flush=True)
-        print(f"[*] 正在以 {self.max_workers} 线程并发探测全站商品索引...", flush=True)
+        # 2. 217 个分类树直接遍历
+        leaf_cats = self.fetch_category_tree()
+        for cat in leaf_cats:
+            tasks_queue.append({"product_category_id": [cat["category_id"]], "scene": 2})
+
+        # 3. 26 个字母 SKU 前缀与品类核心词
+        prefixes = ['W', 'B', 'T', 'S', 'M', 'C', 'D', 'A', 'P', 'H', 'L', 'F', 'G', 'E', 'R', 'N', 'K', 'J', 'O', 'I', 'U', 'V', 'X', 'Y', 'Z', 'Q']
+        keywords = ['Table', 'Chair', 'Desk', 'Sofa', 'Cabinet', 'Bed', 'Light', 'Storage', 'Metal', 'Wood', 'Mirror', 'Stand', 'Rack', 'Stool', 'Bench', 'Frame', 'Box', 'Cart', 'Shelf', 'Set']
+        for pre in prefixes + keywords:
+            tasks_queue.append({"search": pre, "scene": 1})
+
+        print(f"[+] 成功生成复合探测网格: 共 {len(tasks_queue):,} 个空间单元 (价格切片 + 217分类 + SKU前缀/品类词)", flush=True)
+        print(f"[*] 正在以 {self.max_workers} 线程并发扫描全站商品索引...", flush=True)
 
         start_time = time.time()
         total_discovered = 0
-        completed_slices = 0
+        completed_units = 0
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_slice = {
-                executor.submit(self.scan_micro_slice, s[0], s[1]): s
-                for s in slices
+            future_to_unit = {
+                executor.submit(self.scan_search_space, u): u
+                for u in tasks_queue
             }
-            for future in as_completed(future_to_slice):
-                s = future_to_slice[future]
-                completed_slices += 1
+            for future in as_completed(future_to_unit):
+                completed_units += 1
                 try:
-                    slice_tasks = future.result()
-                    new_added = self.db.add_tasks_batch(slice_tasks)
+                    unit_tasks = future.result()
+                    new_added = self.db.add_tasks_batch(unit_tasks)
                     total_discovered += new_added
-                    if completed_slices % 20 == 0 or completed_slices == len(slices):
-                        pct = completed_slices / len(slices) * 100
-                        print(f"[*] 切片网格进度 [{completed_slices:04d}/{len(slices):,}] ({pct:5.1f}%) | 累计已索引: {total_discovered:,} 件商品", flush=True)
+                    if completed_units % 50 == 0 or completed_units == len(tasks_queue):
+                        pct = completed_units / len(tasks_queue) * 100
+                        print(f"[*] 复合网格进度 [{completed_units:04d}/{len(tasks_queue):,}] ({pct:5.1f}%) | 累计已索引: {total_discovered:,} 件商品", flush=True)
                 except Exception:
                     pass
 
@@ -212,11 +225,9 @@ class GigaB2BCrawler:
         is_ok, msg = check_login_status(self.session)
         print(f"[*] 登录凭据状态: {msg}", flush=True)
 
-        # 1. 扫描并建立全量索引池
         if scan_index:
             self.populate_all_tasks_concurrent(limit=limit)
 
-        # 2. 统计待处理总量
         stats = self.db.get_stats()
         total_target = limit if limit else stats["total_tasks"]
         print("\n" + "="*65, flush=True)
@@ -259,7 +270,6 @@ class GigaB2BCrawler:
             eta_seconds = (remaining_items / speed) if speed > 0 else 0
             eta_str = time.strftime("%H:%M:%S", time.gmtime(eta_seconds))
 
-            # 实时无缓冲高频输出进度条
             bar_len = 25
             filled_len = int(bar_len * done_count / total_tasks) if total_tasks > 0 else 0
             bar = '█' * filled_len + '░' * (bar_len - filled_len)
@@ -274,7 +284,6 @@ class GigaB2BCrawler:
 
         self.db.flush()
 
-        # 3. 导出全量报表
         print("\n" + "="*65, flush=True)
         print(" [阶段三] 全量数据报表生成与分卷导出", flush=True)
         print("="*65, flush=True)

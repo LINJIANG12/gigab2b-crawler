@@ -26,20 +26,20 @@ DEFAULT_HEADERS = {
     "X-Requested-With": "XMLHttpRequest"
 }
 
-# 网络请求与连接池高并发调优
-DEFAULT_WORKERS = 15          # 默认并发线程数（推荐 15~20）
-POOL_CONNECTIONS = 50         # HTTP 连接池连接数
-POOL_MAXSIZE = 50             # HTTP 连接池最大复用数
-REQUEST_TIMEOUT = 18          # 请求超时时间（秒）
-MAX_RETRIES = 4               # 失败最大重试次数
-RETRY_DELAY = 1.0             # 失败重试基础间隔（秒）
-REQUEST_DELAY_MIN = 0.05      # 请求最小随机延迟
-REQUEST_DELAY_MAX = 0.15      # 请求最大随机延迟
+# 网络请求与连接池高并发极速调优 (针对 9 万+ 工业级全量采集)
+DEFAULT_WORKERS = 40          # 默认并发线程数（调优为 40 线程高吞吐）
+POOL_CONNECTIONS = 100        # HTTP 连接池连接数
+POOL_MAXSIZE = 100            # HTTP 连接池最大复用数
+REQUEST_TIMEOUT = 12          # 请求超时时间（秒）
+MAX_RETRIES = 3               # 失败最大重试次数
+RETRY_DELAY = 0.5             # 失败重试基础间隔（秒）
+REQUEST_DELAY_MIN = 0.0       # 极速零等待
+REQUEST_DELAY_MAX = 0.02      # 极小抖动
 
-# 数据库与批量写入性能调优
-DB_BATCH_SIZE = 30            # 内存缓冲批量写入阈值（每 30 条写入一次数据库）
-DB_FLUSH_INTERVAL = 3.0       # 缓冲刷新最大时间间隔（秒）
-DB_CACHE_SIZE_MB = 64         # SQLite WAL 内存缓存大小 (MB)
+# 数据库与批量异步写入性能调优
+DB_BATCH_SIZE = 100           # 内存缓冲批量写入阈值（每 100 条写入一次数据库）
+DB_FLUSH_INTERVAL = 1.5       # 缓冲刷新时间间隔（秒）
+DB_CACHE_SIZE_MB = 128        # SQLite WAL 内存缓存大小 (128MB)
 
 # Excel 分卷阈值
 EXCEL_CHUNK_SIZE = 50000      # 每个 Excel 分卷最大商品数
