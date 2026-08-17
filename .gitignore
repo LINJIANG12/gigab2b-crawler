@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Database & SQLite WAL files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# User Credentials & Sensitive Cookies (DO NOT COMMIT)
+cookies.json
+cookie.txt
+!cookie.txt.example
+
+# Crawled Large Data & Images
+data/*.xlsx
+data/*.csv
+images/
+cache/
+
+# Debug files & Logs
+debug_*.json
+price_*.json
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
