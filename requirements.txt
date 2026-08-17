@@ -3,3 +3,8 @@ openpyxl>=3.0.10
 beautifulsoup4>=4.11.0
 cryptography>=38.0.0
 pycryptodome>=3.15.0
+
+# 新增工具脚本依赖 (login_window.py / solve_captcha.py / crawl_prices_no_login.py)
+playwright>=1.62.0
+pillow>=10.0.0
+numpy>=1.26.0

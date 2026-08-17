@@ -6,9 +6,13 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 IMAGE_DIR = os.path.join(BASE_DIR, "images")
 CACHE_DIR = os.path.join(BASE_DIR, "cache")
 
+# 临时文件目录：所有调试/中间产物统一放这里，可随时整目录清空
+TMP_DIR = os.path.join(BASE_DIR, "_tmp")
+
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(IMAGE_DIR, exist_ok=True)
 os.makedirs(CACHE_DIR, exist_ok=True)
+os.makedirs(TMP_DIR, exist_ok=True)
 
 # 网站配置
 BASE_URL = "https://www.gigab2b.com"

@@ -36,3 +36,6 @@ price_*.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# Temp workspace (调试/中间产物统一目录)
+_tmp/
