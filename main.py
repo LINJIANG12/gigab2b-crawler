@@ -79,6 +79,7 @@ def main():
     parser.add_argument("--images", action="store_true", help="是否下载全量商品高清主图与轮播副图到本地")
     parser.add_argument("--no-scan", action="store_true", help="跳过微切片索引扫描，直接基于数据库已有任务继续采集")
     parser.add_argument("--export-only", action="store_true", help="仅从已有数据库导出 Excel 与 CSV 报表")
+    parser.add_argument("--export-skus", action="store_true", help="按规格变体展开导出 8 万+ 全量 SKU 独立明细报表")
     parser.add_argument("--check-cookie", action="store_true", help="检查当前保存的 Cookie 登录态有效性")
     parser.add_argument("--status", action="store_true", help="查看数据库任务与已采集商品统计")
     parser.add_argument("--setup-cookie", action="store_true", help="进入 Cookie 交互式配置模式")
@@ -101,7 +102,19 @@ def main():
         print("="*40 + "\n", flush=True)
         return
 
-    # 2. 仅重新导出报表
+    # 2. 导出变体展开 SKU 明细报表 (8 万+ 行)
+    if args.export_skus:
+        exporter = DataExporter()
+        print("[*] 正在生成按颜色/尺寸展开的 8 万+ 全量 SKU 变体明细报表...", flush=True)
+        excel_files, csv_file = exporter.export_expanded_skus()
+        print(f"\n[+] 成功导出全量 SKU 变体明细报表：", flush=True)
+        for ef in excel_files:
+            print(f" - Excel (分卷): {ef}", flush=True)
+        if csv_file:
+            print(f" - CSV (全量):   {csv_file}", flush=True)
+        return
+
+    # 3. 仅重新导出 SPU 报表
     if args.export_only:
         exporter = DataExporter()
         excel_files, csv_file = exporter.export_all()

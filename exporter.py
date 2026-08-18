@@ -265,3 +265,47 @@ class DataExporter:
                 pass
 
         return saved_files
+
+    def export_expanded_skus(self, excel_filename: str = "gigab2b_skus_all.xlsx", csv_filename: str = "gigab2b_skus_all.csv") -> tuple[list[str], str]:
+        """将全量商品按规格变体（SKU）展开导出为 8 万+ 条独立明细"""
+        items = self.db.get_all_products()
+        if not items:
+            return [], ""
+
+        expanded_items = []
+        for p in items:
+            variants = []
+            v_raw = p.get("variants")
+            if isinstance(v_raw, str) and v_raw:
+                try:
+                    variants = json.loads(v_raw)
+                except:
+                    pass
+            elif isinstance(v_raw, list):
+                variants = v_raw
+
+            if variants and len(variants) > 1:
+                for v in variants:
+                    cp = dict(p)
+                    v_sku = v.get("sku") or p.get("sku")
+                    v_spec = v.get("spec_name") or v.get("name") or v.get("specification") or ""
+                    v_price = v.get("price") or p.get("price")
+                    v_stock = v.get("stock") or p.get("total_stock")
+                    v_img = v.get("image") or p.get("main_image")
+
+                    cp["sku"] = v_sku
+                    cp["title"] = f"{p.get('title', '')} [{v_spec}]" if v_spec else p.get('title', '')
+                    cp["price"] = v_price
+                    cp["total_stock"] = v_stock
+                    cp["main_image"] = v_img
+                    cp["status_reason"] = f"变体规格: {v_spec}" if v_spec else "主规格"
+                    expanded_items.append(cp)
+            else:
+                cp = dict(p)
+                cp["status_reason"] = "单品/标准规格"
+                expanded_items.append(cp)
+
+        excel_files = self.export_to_excel_chunked(expanded_items, excel_filename)
+        csv_file = self.export_to_csv(expanded_items, csv_filename)
+        return excel_files, csv_file
+
