@@ -109,5 +109,12 @@ pip install -r requirements.txt
 ├── requirements.txt          # Python 依赖清单
 ├── 启动采集.bat              # Windows 一键全量采集脚本
 ├── 爬取100个示例.bat         # Windows 一键示例采集脚本
-└── 提取Edge登录凭据.bat      # Windows 一键提取 Cookie 脚本
+├── 提取Edge登录凭据.bat      # Windows 一键提取 Cookie 脚本
+└── LICENSE                   # MIT 开源许可证
 ```
+
+---
+
+## 📄 开源许可证 (License)
+
+本项目采用 [MIT License](LICENSE) 授权，允许任何人免费、自由地用于学习、二次开发与商业用途。
