@@ -1,6 +1,9 @@
-# GigaB2B 全站商品全字段大规模数据采集系统
+# GigaB2B (大健云仓 / GigaCloud) 全站商品数据采集与逆向分析爬虫系统
 
-基于 Python 3.14 + 官方后端 API 逆向驱动的跨境大件供应链平台（GigaB2B）工业级商品数据采集与导出系统。
+> **English Title:** GigaCloud B2B (GigaB2B) E-Commerce Full-Site Product Scraper & Reverse Engineering Crawler  
+> **关键词 / Keywords:** `GigaB2B` `大健云仓` `GigaCloud` `跨境电商爬虫` `外贸供应链` `一件代发` `海外仓库存` `API逆向` `价格监控` `Python爬虫` `SPU/SKU采集`
+
+基于 Python 3.14 + 官方后端 API 逆向驱动的跨境大件电商供应链平台（**GigaB2B / 大健云仓 / GigaCloud Technology**）工业级商品数据采集、全量海外仓库存监控与自动化导出系统。
 
 > 💬 **写在前面**：做这个项目是因为缺钱接单，但是东西做完了买家又不要了。遂开源。
 
