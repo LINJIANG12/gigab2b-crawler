@@ -21,10 +21,12 @@ cookie.txt
 !cookie.txt.example
 
 # Crawled Large Data & Images
-data/*.xlsx
-data/*.csv
-images/
-cache/
+data/*
+!data/.gitkeep
+images/*
+!images/.gitkeep
+cache/*
+!cache/.gitkeep
 
 # Debug files & Logs
 debug_*.json

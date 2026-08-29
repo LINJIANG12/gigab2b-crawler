@@ -1,4 +1,4 @@
 # 在 Edge/Chrome 登录 GigaB2B 后，按 F12 打开 Console，运行 copy(document.cookie)
 # 然后将复制的 Cookie 字符串直接粘贴保存到 cookie.txt 文件中：
 # 示例：
-# _ayo=ca31650e8ac2dbe3a2da475523a82a38; OCSESSID=0a759e0801d712bc1bd146cc87; is_partner=0; gmd_device_id=614e20b5-3911-4a14-b229-d958acc95560; login_flag=
+# _ayo=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; OCSESSID=xxxxxxxxxxxxxxxxxxxxxxxxxx; is_partner=0; gmd_device_id=00000000-0000-0000-0000-000000000000; login_flag=1

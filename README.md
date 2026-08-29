@@ -64,6 +64,10 @@ pip install -r requirements.txt
 ## 📁 项目结构
 
 ```text
+├── docs/                     # 逆向分析、风控绕过与技术文档
+├── tools/                    # 逆向探测、数据审计、价格修复与诊断分析工具集
+├── data/                     # 采集结果输出目录（Excel / CSV）
+├── images/                   # 商品高清图片下载目录
 ├── config.py                 # 全局配置（并发数、超时、重试与路径）
 ├── cookie_manager.py         # Cookie 自动管理、登录态校验与 Edge 本地提取
 ├── database.py               # SQLite 持久化、任务队列与断点续爬管理
